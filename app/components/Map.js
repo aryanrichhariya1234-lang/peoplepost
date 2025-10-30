@@ -40,7 +40,7 @@ export default function Map({ mock, position, setPosition, selectedIssue }) {
   if (!isClient) return <p>Loading map...</p>;
   return (
     <MapContainer
-      className="w-full h-full"
+      className="w-full h-full md:h-full md:w-full"
       center={center}
       zoom={13}
       scrollWheelZoom={true}

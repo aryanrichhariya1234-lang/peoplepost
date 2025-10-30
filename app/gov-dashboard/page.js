@@ -248,9 +248,8 @@ export default function GovDashboardPage() {
       </div>
 
       <div className="w-full md:w-7/12 lg:w-8/12 bg-gray-100 relative">
-        <div className="p-4 h-full">
-          {" "}
-          <div className="w-full h-full">
+        <div className="p-4 h-full md:h-full">
+          <div className="w-full h-full md:h-full md:w-full">
             <Map
               mock={MOCK_ISSUES}
               position={mapCenter}
