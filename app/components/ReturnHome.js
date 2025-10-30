@@ -3,7 +3,6 @@ import { HomeIcon } from "@heroicons/react/24/outline";
 
 export default function ReturnHomeButton() {
   return (
-    // We use a Next.js Link (or <a> tag) to navigate
     <Link
       href="/"
       className="inline-flex items-center p-3 mb-8 rounded-full text-white bg-indigo-600 shadow-lg hover:bg-indigo-700 transition duration-150 transform hover:scale-105"

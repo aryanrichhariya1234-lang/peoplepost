@@ -12,7 +12,6 @@ export async function getServerSupabaseClientReadyOnly() {
         get(name) {
           return cookieStore.get(name)?.value;
         },
-        // ⛔ no set/remove here – read-only
       },
     }
   );

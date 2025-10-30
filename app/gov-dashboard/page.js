@@ -1,5 +1,3 @@
-// app/(gov-dashboard)/inbox/page.jsx
-
 "use client";
 import dynamic from "next/dynamic";
 import {
@@ -12,15 +10,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
-// Assuming you have components for the modal, badges, and the home button
 import IssueModal from "../components/IssueModal";
 import StatusBadgeForGov from "../components/StatusBadgeForGov";
 import ReturnHomeButton from "../components/ReturnHome";
 
-// Dynamically import the Map component (Client-side only)
 const Map = dynamic(() => import("../components/Map"), { ssr: false });
 
-// --- 1. Mock Data (Unchanged) ---
 const MOCK_ISSUES = [
   {
     id: 101,
@@ -84,7 +79,6 @@ const MOCK_ISSUES = [
   },
 ];
 
-// --- 2. New Component: Issue Detail Panel (New component for the left pane) ---
 const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
   const handleStatusUpdate = (newStatus) => {
     console.log(`[ACTION] Updating Issue ${issue.id} status to: ${newStatus}`);
@@ -108,7 +102,6 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
 
       <div className="space-y-4 flex-1 overflow-y-auto pr-2">
         {" "}
-        {/* Added pr-2 for scrollbar space */}
         <div className="p-3 bg-indigo-50 rounded-lg border-l-4 border-indigo-600">
           <h3 className="font-semibold text-xl text-indigo-800 mb-1">
             {issue.title}
@@ -120,7 +113,6 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
             </span>
           </div>
         </div>
-        {/* Location Card */}
         <div className="p-4 bg-white rounded-lg border shadow-sm">
           <p className="font-semibold text-gray-700 flex items-center mb-1">
             <MapPinIcon className="w-4 h-4 mr-1 text-indigo-600" />
@@ -128,7 +120,6 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
           </p>
           <p className="text-sm text-gray-500">Category: {issue.category}</p>
         </div>
-        {/* Description */}
         <div>
           <h3 className="font-semibold text-gray-800 mb-2">
             Detailed Description
@@ -137,7 +128,6 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
             {issue.description}
           </p>
         </div>
-        {/* Images */}
         <div>
           <h3 className="font-semibold text-gray-800 mb-2">
             Reported Images ({issue.images.length})
@@ -161,7 +151,6 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
         </div>
       </div>
 
-      {/* Action Panel (Sticky Bottom) */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <h3 className="font-bold text-lg mb-2">Management Actions</h3>
         <div className="flex space-x-2">
@@ -187,47 +176,35 @@ const IssueDetailPanel = ({ issue, onBack, onStatusChange }) => {
   );
 };
 
-// --- 3. Main Dashboard Component ---
 export default function GovDashboardPage() {
   const [selectedIssue, setSelectedIssue] = useState(null);
-  // State to manage the center of the map, updated when an issue is selected
   const [mapCenter, setMapCenter] = useState({ lat: 34.05, lng: -118.25 });
 
-  // Function to handle the issue click
   const handleIssueClick = (issue) => {
     setSelectedIssue(issue);
-    // Center the map on the selected issue's coordinates
     if (issue.coords) {
       setMapCenter(issue.coords);
     }
   };
 
-  // Function to close the detail panel and return to list view
   const handleBackToList = () => {
     setSelectedIssue(null);
   };
 
-  // Placeholder for actual status change logic
   const handleStatusChange = (issueId, newStatus) => {
-    // In a real app, this would trigger a Server Action/API call to update the DB
     console.log(`Issue ${issueId} status changed to ${newStatus}`);
-    // Optional: Close panel and show success message
-    // setSelectedIssue(null);
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      {/* LEFT: Issue List OR Issue Details (40% on Desktop) */}
       <div className="w-full md:w-5/12 lg:w-4/12 border-r bg-white flex flex-col md:max-h-screen overflow-hidden">
         {selectedIssue ? (
-          /* Display Issue Details */
           <IssueDetailPanel
             issue={selectedIssue}
             onBack={handleBackToList}
             onStatusChange={handleStatusChange}
           />
         ) : (
-          /* Display Issue List */
           <>
             <header className="p-4 border-b sticky top-0 bg-white z-20 flex justify-between items-center">
               <div className="space-y-1">
@@ -243,7 +220,6 @@ export default function GovDashboardPage() {
               <ReturnHomeButton />
             </header>
 
-            {/* Issue List Cards */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {MOCK_ISSUES.map((issue) => (
                 <div
@@ -271,24 +247,19 @@ export default function GovDashboardPage() {
         )}
       </div>
 
-      {/* RIGHT: Persistent Map Panel (60% on Desktop) */}
       <div className="w-full md:w-7/12 lg:w-8/12 bg-gray-100 relative">
         <div className="p-4 h-full">
           {" "}
-          {/* Reduced padding slightly to fit map better */}
           <div className="w-full h-full">
             <Map
               mock={MOCK_ISSUES}
               position={mapCenter}
               setPosition={setMapCenter}
-              selectedIssue={selectedIssue} // Pass the selected issue for potential highlighting
+              selectedIssue={selectedIssue}
             />
           </div>
         </div>
       </div>
-
-      {/* Modal is removed as detail panel handles the view */}
-      {/* <IssueModal issue={selectedIssue} onClose={handleCloseModal} /> */}
     </div>
   );
 }

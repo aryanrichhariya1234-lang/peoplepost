@@ -35,9 +35,7 @@ export default function OfficialSignUpPage({ searchParams }) {
         <form className="mt-8 space-y-6" action={signUpAction}>
           <input type="hidden" name="role" value="official" />
 
-          {/* Form Fields (Email, Password, Confirm) - Same as citizen form */}
           <div className="rounded-md shadow-sm space-y-3">
-            {/* Email, Password, Confirm Password HTML blocks here */}
             <div>
               <label htmlFor="name" className="sr-only">
                 Name
@@ -115,7 +113,6 @@ export default function OfficialSignUpPage({ searchParams }) {
               </div>
             </div>
 
-            {/* === CONDITIONAL FIELD: Government Official ID (Unique to this route) === */}
             <div className="pt-2">
               <label
                 htmlFor="governmentId"

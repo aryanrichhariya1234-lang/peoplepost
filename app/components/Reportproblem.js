@@ -34,7 +34,6 @@ function Reportproblem() {
   return (
     <div className="w-full md:w-5/12 lg:w-4/12 flex-shrink-0 p-4 sm:p-8 md:overflow-y-auto">
       <div className="max-w-xl mx-auto md:max-w-none space-y-8">
-        {/* Header with Back Button */}
         <header className="flex items-center space-x-3 border-b pb-4">
           <Link
             href="/"
@@ -53,9 +52,7 @@ function Reportproblem() {
           </div>
         </header>
 
-        {/* Form Container */}
         <form className="bg-white p-6 rounded-xl shadow-2xl space-y-6">
-          {/* 1. Problem Type and Title */}
           <div>
             <label
               htmlFor="type"
@@ -96,7 +93,6 @@ function Reportproblem() {
             />
           </div>
 
-          {/* 2. Description */}
           <div>
             <label
               htmlFor="description"
@@ -126,7 +122,7 @@ function Reportproblem() {
               <input
                 id="image-upload"
                 type="file"
-                name="images-selector" // Use a different name for the selector input
+                name="images-selector"
                 multiple
                 accept="image/jpeg,image/png"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -138,7 +134,6 @@ function Reportproblem() {
             </div>
           </div>
 
-          {/* 3.3 Location Selection (GPS Button) */}
           <div className="border-t pt-6">
             <label className="block text-lg font-semibold text-gray-800 flex items-center mb-4">
               <MapPinIcon className="w-5 h-5 mr-2 text-indigo-600" />
@@ -155,7 +150,6 @@ function Reportproblem() {
             </button>
           </div>
 
-          {/* 4. Submit Button */}
           <SubmitButton />
         </form>
       </div>

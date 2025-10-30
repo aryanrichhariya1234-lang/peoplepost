@@ -3,7 +3,6 @@ import Link from "next/link";
 import { signUpAction } from "@/app/data-service/actions";
 
 const FormStatusMessage = ({ message, success }) => {
-  // ... (Use the same simple client component as before)
   if (!message) return null;
   return (
     <div
@@ -32,10 +31,7 @@ export default async function CitizenSignUpPage() {
         <form className="mt-8 space-y-6" action={signUpAction}>
           <input type="hidden" name="role" value="citizen" />
 
-          {/* Form Fields (Email, Password, Confirm) - Same as previous examples */}
           <div className="rounded-md shadow-sm space-y-3">
-            {/* Email Input */}
-            {/* (Paste the Email, Password, and Confirm Password HTML blocks here) */}
             <div>
               <label htmlFor="name" className="sr-only">
                 Name
@@ -75,7 +71,6 @@ export default async function CitizenSignUpPage() {
               </div>
             </div>
 
-            {/* Password Input */}
             <div>
               <label htmlFor="password" className="sr-only">
                 Password
@@ -96,7 +91,6 @@ export default async function CitizenSignUpPage() {
               </div>
             </div>
 
-            {/* Password Confirmation Input */}
             <div>
               <label htmlFor="passwordConfirm" className="sr-only">
                 Confirm Password
@@ -117,8 +111,6 @@ export default async function CitizenSignUpPage() {
               </div>
             </div>
           </div>
-
-          {/* <FormStatusMessage message={statusMessage} success={isSuccess} /> */}
 
           <button
             type="submit"

@@ -4,7 +4,6 @@ import { getServerSupabaseClient } from "./data-service/supabaseServer";
 import { signout } from "./data-service/actions";
 import { getServerSupabaseClientReadyOnly } from "./data-service/supabaseReadOnly";
 
-// --- Constants (LATEST_REPORTS, STATS remain unchanged) ---
 const LATEST_REPORTS = [
   {
     id: 1,
@@ -38,20 +37,17 @@ const STATS = [
   { value: "2.1 Days", label: "Average Resolution Time", color: "yellow" },
 ];
 
-// === SERVER COMPONENT START ===
 export default async function page() {
   const supabase = await getServerSupabaseClientReadyOnly();
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData.session?.user;
   const email = user?.email;
 
-  // Default values if not logged in or data is missing
   let userRole = null;
   let name = "Guest";
   let isLoggedIn = !!user;
 
   if (user) {
-    // Fetch name and role from the 'users' table
     const { data, error } = await supabase
       .from("users")
       .select("name,role")
@@ -62,31 +58,27 @@ export default async function page() {
       console.log(data);
       userRole = data.role || "citizen";
       name = data.name || email.split("@")[0];
-      // Capitalize name for display
+
       name = name.charAt(0).toUpperCase() + name.slice(1);
     } else {
-      // Fallback profile if DB lookup fails
       name = email.split("@")[0];
       name = name.charAt(0).toUpperCase() + name.slice(1);
       userRole = "citizen";
     }
   }
 
-  // --- Determine the correct link for the main action button ---
   const reportLink = userRole === "official" ? "/gov-dashboard" : "/report";
   const reportButtonText =
     userRole === "official" ? "Go to Dashboard" : "Report a New Problem";
   const userDashboardLink =
     userRole === "official" ? "/dashboard/inbox" : "/account";
 
-  // --- Conditional Navigation (NavLinks Component) ---
   const NavLinks = () => {
     if (isLoggedIn) {
       const displayName = name || "Account";
 
       return (
         <div className="flex space-x-4 items-center">
-          {/* Display Name / Link to Dashboard */}
           <Link
             href={userDashboardLink}
             className="text-white bg-indigo-600 hover:bg-indigo-700 font-medium py-2 px-4 rounded-lg transition duration-150"
@@ -94,7 +86,6 @@ export default async function page() {
             {displayName}
           </Link>
 
-          {/* Logout Button */}
           <form action={signout}>
             <button
               type="submit"
@@ -127,7 +118,6 @@ export default async function page() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* --- Simple Navigation --- */}
       <nav className="bg-white shadow-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link href="/" className="text-2xl font-extrabold text-indigo-600">
@@ -137,7 +127,6 @@ export default async function page() {
         </div>
       </nav>
 
-      {/* --- 3. Hero Section --- */}
       <section className="bg-indigo-50 pt-16 pb-16 px-4 text-center md:pt-24 md:pb-24">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-extrabold text-gray-900 leading-tight sm:text-5xl md:text-6xl">
@@ -145,7 +134,6 @@ export default async function page() {
             <span className="text-indigo-600 block sm:inline">Resolve It.</span>
           </h1>
 
-          {/* Conditional subtext */}
           {userRole === "citizen" && (
             <p className="mt-4 text-lg font-semibold text-gray-700 max-w-2xl mx-auto sm:text-xl">
               Welcome back, {name}! Thank you for your continued help.
@@ -159,7 +147,6 @@ export default async function page() {
             </p>
           )}
 
-          {/* --- MAIN ACTION BUTTON (Conditional Link & Text) --- */}
           <Link
             href={reportLink}
             className="mt-8 inline-block bg-indigo-600 text-white font-semibold py-3 px-8 rounded-full shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.02] text-lg"
@@ -170,7 +157,6 @@ export default async function page() {
         </div>
       </section>
 
-      {/* --- 4. Key Statistics Section (Always visible) --- */}
       <section className="bg-white py-12 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
           {STATS.map((stat, index) => (
@@ -189,7 +175,6 @@ export default async function page() {
         </div>
       </section>
 
-      {/* --- 5. Latest Problems Feed (CONDITIONAL RENDERING) --- */}
       {(userRole !== "citizen" || !isLoggedIn) && (
         <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-6xl mx-auto">
@@ -222,14 +207,11 @@ export default async function page() {
               ))}
             </div>
 
-            <div className="mt-10 text-center">
-              {/* Removed the 'View All Problems' link as it's redundant with the feed */}
-            </div>
+            <div className="mt-10 text-center"></div>
           </div>
         </section>
       )}
 
-      {/* --- Simple Footer --- */}
       <footer className="bg-gray-800 text-white py-6 mt-12">
         <div className="max-w-6xl mx-auto text-center text-sm">
           &copy; {new Date().getFullYear()} CityPulse. Built with Next.js &

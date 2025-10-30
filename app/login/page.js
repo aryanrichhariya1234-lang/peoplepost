@@ -17,7 +17,6 @@ export default function LoginPage() {
 
         <form className="mt-8 space-y-6" action={login}>
           <div className="rounded-md shadow-sm space-y-4">
-            {/* Email Input */}
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -38,7 +37,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password Input */}
             <div>
               <label htmlFor="password" className="sr-only">
                 Password
@@ -60,7 +58,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition"

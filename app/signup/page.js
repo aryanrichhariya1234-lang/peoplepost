@@ -1,9 +1,7 @@
-// app/signup/page.jsx
 "use client";
 
 import { UserIcon, BuildingOfficeIcon } from "@heroicons/react/24/outline";
-import Link from "next/link"; // Use Link for client-side navigation
-
+import Link from "next/link";
 export default function SignUpRoleSelectionPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -18,7 +16,6 @@ export default function SignUpRoleSelectionPage() {
         </div>
 
         <div className="flex space-x-4 border-b pb-4">
-          {/* Option 1: Citizen Sign Up */}
           <Link
             href="/signup/citizen"
             className="flex-1 flex flex-col items-center p-6 border-2 rounded-lg transition border-indigo-600/50 bg-indigo-50 hover:bg-indigo-100 shadow-md cursor-pointer"
@@ -32,7 +29,6 @@ export default function SignUpRoleSelectionPage() {
             </p>
           </Link>
 
-          {/* Option 2: Government Official Sign Up */}
           <Link
             href="/signup/official"
             className="flex-1 flex flex-col items-center p-6 border-2 rounded-lg transition border-teal-600/50 bg-teal-50 hover:bg-teal-100 shadow-md cursor-pointer"
