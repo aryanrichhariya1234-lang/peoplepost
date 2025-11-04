@@ -43,7 +43,7 @@ export default async function page() {
   const user = sessionData.session?.user;
   const email = user?.email;
   const reports = await getReports();
-  LATEST_REPORTS = reports ? reports : LATEST_REPORTS;
+  const latestReports = user && reports?.length ? reports : LATEST_REPORTS;
 
   let userRole = null;
   let name = "Guest";
@@ -188,7 +188,7 @@ export default async function page() {
             </h2>
 
             <div className="space-y-4">
-              {LATEST_REPORTS.map((report) => (
+              {latestReports.map((report) => (
                 <div
                   key={report.id}
                   href={`/problems/${report.id}`}
