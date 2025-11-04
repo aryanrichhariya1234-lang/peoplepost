@@ -1,4 +1,5 @@
 "use server";
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -16,8 +17,8 @@ export async function getServerSupabaseClient() {
         set(name, value, options) {
           cookieStore.set(name, value, options);
         },
-        remove(name, option) {
-          cookieStore.set(name, "", option);
+        remove(name, options) {
+          cookieStore.set(name, "", { ...options, maxAge: 0 });
         },
       },
     }

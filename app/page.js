@@ -1,10 +1,10 @@
 import Link from "next/link";
 import StatusBadge from "./components/StatusBadge";
 import { getServerSupabaseClient } from "./data-service/supabaseServer";
-import { signout } from "./data-service/actions";
+import { getReports, signout } from "./data-service/actions";
 import { getServerSupabaseClientReadyOnly } from "./data-service/supabaseReadOnly";
 
-const LATEST_REPORTS = [
+let LATEST_REPORTS = [
   {
     id: 1,
     title: "Large Pothole on Main St.",
@@ -42,6 +42,8 @@ export default async function page() {
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData.session?.user;
   const email = user?.email;
+  const reports = await getReports();
+  LATEST_REPORTS = reports ? reports : LATEST_REPORTS;
 
   let userRole = null;
   let name = "Guest";
@@ -67,11 +69,14 @@ export default async function page() {
     }
   }
 
-  const reportLink = userRole === "official" ? "/gov-dashboard" : "/report";
+  const reportLink = !user
+    ? "/login"
+    : userRole === "official"
+    ? "/gov-dashboard"
+    : "/report";
   const reportButtonText =
     userRole === "official" ? "Go to Dashboard" : "Report a New Problem";
-  const userDashboardLink =
-    userRole === "official" ? "/dashboard/inbox" : "/account";
+  const userDashboardLink = userRole === "official" ? "/dashboard" : "/account";
 
   const NavLinks = () => {
     if (isLoggedIn) {

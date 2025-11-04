@@ -3,3 +3,7 @@ export function getPosition() {
     navigator.geolocation.getCurrentPosition(resolve, reject);
   });
 }
+
+export function giveRandom() {
+  const random = Math.random();
+}

@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "./supabaseServer";
 import { revalidatePath } from "next/cache";
+import { getServerSupabaseClientReadyOnly } from "./supabaseReadOnly";
 
 export async function signUpAction(formData) {
   const email = formData.get("email");
@@ -68,4 +69,48 @@ export async function login(formData) {
   }
   console.log(data);
   redirect("/");
+}
+
+export async function getCurrentUserData() {
+  const supabase = await getServerSupabaseClientReadyOnly();
+  const data = await supabase.auth.getUser();
+  const user = data?.data?.user;
+  const email = user?.email;
+  const user1 = await supabase.from("users").select("id").eq("email", email);
+  const id = user1?.data[0]?.id;
+  const data1 = await supabase.from("reports").select("*").eq("userId", id);
+  return data1;
+}
+export async function getcurrentOfficalData() {
+  const supabase = await getServerSupabaseClientReadyOnly();
+  const data = await supabase.auth.getUser();
+  const user = data?.data?.user;
+  const email = user?.email;
+  const user1 = await supabase
+    .from("users")
+    .select("name,governmentId")
+    .eq("email", email);
+
+  return user1.data[0];
+}
+export async function getId() {
+  const supabase = await getServerSupabaseClientReadyOnly();
+  const data = await supabase.auth.getUser();
+  const user = data?.data?.user;
+  const email = user?.email;
+  const person = await supabase.from("users").select("id").eq("email", email);
+  const data1 = person?.data;
+  const id = data1[0]?.id;
+  return id;
+}
+
+export async function getReports() {
+  const supabase = await getServerSupabaseClientReadyOnly();
+  const reports = await supabase.from("reports").select("*");
+
+  const newReports = reports.data.map((item) => {
+    const { created_at: time, address: location, title, id, status } = item;
+    return { time, location, title, id, status };
+  });
+  return newReports;
 }
