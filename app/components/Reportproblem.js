@@ -14,7 +14,22 @@ import { useState } from "react";
 import { submitReport } from "../data-service/clientfunctions";
 import toast, { Toaster } from "react-hot-toast";
 
-const PROBLEM_TYPES = ["Pothole", "Streetlight", "Garbage", "Other"];
+const PROBLEM_TYPES = [
+  "Pothole",
+  "Streetlight",
+  "Garbage",
+  "Other",
+  "Garbage dump",
+  "Sanitation or Waste",
+  "Road and Transport ",
+  "Water and Drainage",
+  "Public Safety",
+  "Garbage vehicle not arrived",
+  "Dustbins not cleaned",
+  "Sweeping ",
+  "Dead animals ",
+  "Public toilet(s) cleaning",
+];
 
 const SubmitButton = () => {
   return (
