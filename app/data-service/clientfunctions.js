@@ -1,9 +1,12 @@
 "use client";
 
 import toast from "react-hot-toast";
+
+// 🔥 USE ENV (IMPORTANT)
 const BASE_URL = "https://peoplespost-3rje.onrender.com/api/v1";
-// const BASE_URL = "http://localhost:3000/api/v1";
-console.log(BASE_URL);
+
+// ================== AUTH ==================
+
 export const handleSignup = async (body) => {
   try {
     const res = await fetch(`${BASE_URL}/users/signup`, {
@@ -68,6 +71,8 @@ export const logoutUser = async () => {
   }
 };
 
+// ================== USER ==================
+
 export const getCurrentUser = async () => {
   try {
     const res = await fetch(`${BASE_URL}/users/me`, {
@@ -75,18 +80,23 @@ export const getCurrentUser = async () => {
       credentials: "include",
     });
 
+    if (!res.ok) return null;
+
     const data = await res.json();
     return data.user || null;
   } catch {
     return null;
   }
 };
+
 export const getCurrentUserData = async () => {
   try {
     const res = await fetch(`${BASE_URL}/users/me`, {
       method: "GET",
       credentials: "include",
     });
+
+    if (!res.ok) return null;
 
     const data = await res.json();
     return data.data || null;
@@ -95,6 +105,8 @@ export const getCurrentUserData = async () => {
   }
 };
 
+// ================== POSTS ==================
+
 export const getPosts = async () => {
   try {
     const res = await fetch(`${BASE_URL}/posts`, {
@@ -102,15 +114,42 @@ export const getPosts = async () => {
       credentials: "include",
     });
 
+    if (!res.ok) return [];
+
     const data = await res.json();
 
-    if (!res.ok || data.status === "error" || data.status === "fail") {
-      return [];
-    }
-
-    return data.data || data || []; // ✅ FIXED
+    return data.data || data || [];
   } catch {
     return [];
+  }
+};
+
+export const createPost = async (formData) => {
+  try {
+    const res = await fetch(`${BASE_URL}/posts`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.status === "fail") {
+      return {
+        error: true,
+        message: data.message || "Failed to create post",
+      };
+    }
+
+    return {
+      success: true,
+      post: data.data,
+    };
+  } catch {
+    return {
+      error: true,
+      message: "Network error",
+    };
   }
 };
 
@@ -124,7 +163,7 @@ export const updatePost = async ({ body, issue }) => {
     });
 
     const data = await res.json();
-    console.log(data);
+
     if (!res.ok || data.status === "error" || data.status === "fail") {
       return { error: true };
     }
@@ -134,6 +173,39 @@ export const updatePost = async ({ body, issue }) => {
     return { error: true };
   }
 };
+
+export const toggleLikePost = async (id) => {
+  try {
+    const res = await fetch(`${BASE_URL}/posts/${id}/like`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    const data = await res.json();
+    return data;
+  } catch {
+    return { error: true };
+  }
+};
+
+// ================== AI ==================
+
+export const getAIInsights = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/ai/insights`, {
+      credentials: "include",
+    });
+
+    if (!res.ok) return "Failed to load insights";
+
+    const data = await res.json();
+    return data.insights;
+  } catch {
+    return "Failed to load insights";
+  }
+};
+
+// ================== FORM HANDLERS ==================
 
 export const handleLoginSubmit = async (e) => {
   e.preventDefault();
@@ -183,60 +255,4 @@ export const handleSignupSubmit = async (e) => {
   setTimeout(() => {
     window.location.href = "/login";
   }, 800);
-};
-
-export const createPost = async (formData) => {
-  try {
-    const res = await fetch(`${BASE_URL}/posts`, {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || data.status === "fail") {
-      return {
-        error: true,
-        message: data.message || "Failed to create post",
-      };
-    }
-
-    return {
-      success: true,
-      post: data.data,
-    };
-  } catch (err) {
-    return {
-      error: true,
-      message: "Network error",
-    };
-  }
-};
-
-export const toggleLikePost = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:3000/api/v1/posts/${id}/like`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    return { error: true };
-  }
-};
-
-export const getAIInsights = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/api/v1/ai/insights", {
-      credentials: "include",
-    });
-
-    const data = await res.json();
-    return data.insights;
-  } catch {
-    return "Failed to load insights";
-  }
 };
