@@ -42,7 +42,7 @@ const MANAGEMENT_OPTIONS = [
 
 export default async function DashboardPage() {
   const profile = mockProfile; // Placeholder for fetched user profile
-  const data = await getcurrentOfficalData();
+  const data = await getCurrentUserData();
   const { name } = data;
   const governmentId = data?.governmentId || "";
 
