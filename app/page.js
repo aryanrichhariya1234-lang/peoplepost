@@ -1,254 +1,312 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HeartIcon } from "@heroicons/react/24/outline";
+
 import StatusBadge from "./components/StatusBadge";
-import { getServerSupabaseClient } from "./data-service/supabaseServer";
-import { getReports, signout } from "./data-service/actions";
-import { getServerSupabaseClientReadyOnly } from "./data-service/supabaseReadOnly";
+import {
+  getPosts,
+  getCurrentUser,
+  logoutUser,
+  toggleLikePost,
+} from "./data-service/clientfunctions";
 
-let LATEST_REPORTS = [
-  {
-    id: 1,
-    title: "Large Pothole on Main St.",
-    status: "NEW",
-    time: "2 hours ago",
-    location: "Downtown",
-    imageUrl: "/images/pothole_placeholder.jpg",
-  },
-  {
-    id: 2,
-    title: "Overflowing Dumpster on Elm",
-    status: "IN_PROCESS",
-    time: "15 minutes ago",
-    location: "North End",
-    imageUrl: "/images/garbage_placeholder.jpg",
-  },
-  {
-    id: 3,
-    title: "Streetlight Out Near Park",
-    status: "RESOLVED",
-    time: "Yesterday",
-    location: "West Side",
-    imageUrl: "/images/streetlight_placeholder.jpg",
-  },
-];
+// 🔥 Recharts
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
-const STATS = [
-  { value: "1,500+", label: "Problems Reported", color: "indigo" },
-  { value: "92%", label: "Issues Successfully Resolved", color: "green" },
-  { value: "2.1 Days", label: "Average Resolution Time", color: "yellow" },
-];
+export default function Page() {
+  const [reports, setReports] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function page() {
-  const supabase = await getServerSupabaseClientReadyOnly();
-  const { data: sessionData } = await supabase.auth.getSession();
-  const user = sessionData.session?.user;
-  const email = user?.email;
-  const reports = await getReports();
-  const latestReports = user && reports?.length ? reports : LATEST_REPORTS;
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [likedPosts, setLikedPosts] = useState({});
 
-  let userRole = null;
-  let name = "Guest";
-  let isLoggedIn = !!user;
+  // 🎨 COLORS
+  const COLORS = ["#6366F1", "#22C55E", "#F59E0B", "#EF4444", "#06B6D4"];
 
-  if (user) {
-    const { data, error } = await supabase
-      .from("users")
-      .select("name,role")
-      .eq("email", email)
-      .single();
+  useEffect(() => {
+    const fetchData = async () => {
+      const posts = await getPosts();
+      const userData = await getCurrentUser();
 
-    if (data) {
-      console.log(data);
-      userRole = data.role || "citizen";
-      name = data.name || email.split("@")[0];
+      setReports(posts || []);
+      setUser(userData || null);
 
-      name = name.charAt(0).toUpperCase() + name.slice(1);
-    } else {
-      name = email.split("@")[0];
-      name = name.charAt(0).toUpperCase() + name.slice(1);
-      userRole = "citizen";
+      const likedMap = {};
+      posts.forEach((post) => {
+        const isLiked = post.likes?.some((l) => l.user === userData?._id);
+        if (isLiked) likedMap[post._id] = true;
+      });
+
+      setLikedPosts(likedMap);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const toggleLike = async (id) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
     }
-  }
+
+    const res = await toggleLikePost(id);
+    if (res.error) return;
+
+    setLikedPosts((prev) => ({
+      ...prev,
+      [id]: res.liked,
+    }));
+
+    setReports((prev) =>
+      prev.map((p) =>
+        p._id === id
+          ? {
+              ...p,
+              likes: res.liked
+                ? [...(p.likes || []), { user: user._id }]
+                : p.likes.filter((l) => l.user !== user._id),
+            }
+          : p
+      )
+    );
+  };
+
+  const handleLogout = async () => {
+    await logoutUser();
+    window.location.reload();
+  };
 
   const reportLink = !user
     ? "/login"
-    : userRole === "official"
+    : user.role === "official"
     ? "/gov-dashboard"
     : "/report";
-  const reportButtonText =
-    userRole === "official" ? "Go to Dashboard" : "Report a New Problem";
-  const userDashboardLink = userRole === "official" ? "/dashboard" : "/account";
 
-  const NavLinks = () => {
-    if (isLoggedIn) {
-      const displayName = name || "Account";
+  // ================== 📊 CHART DATA ==================
+  const cityCount = {};
+  const categoryCount = {};
+  const userCount = {};
 
-      return (
-        <div className="flex space-x-4 items-center">
-          <Link
-            href={userDashboardLink}
-            className="text-white bg-indigo-600 hover:bg-indigo-700 font-medium py-2 px-4 rounded-lg transition duration-150"
-          >
-            {displayName}
-          </Link>
+  reports.forEach((post) => {
+    cityCount[post.city] = (cityCount[post.city] || 0) + 1;
+    categoryCount[post.category] = (categoryCount[post.category] || 0) + 1;
+    userCount[post.user] = (userCount[post.user] || 0) + 1;
+  });
 
-          <form action={signout}>
-            <button
-              type="submit"
-              className="text-gray-600 hover:text-red-600 font-medium transition duration-150 py-2 px-1"
-            >
-              Sign Out
-            </button>
-          </form>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex space-x-4 justify-center items-center">
-          <Link
-            href="/login"
-            className="text-gray-600 hover:text-indigo-600 font-medium transition duration-150 hidden md:inline"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/signup"
-            className="bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-150"
-          >
-            Sign Up
-          </Link>
-        </div>
-      );
-    }
-  };
+  const cityData = Object.keys(cityCount).map((key) => ({
+    name: key,
+    value: cityCount[key],
+  }));
+
+  const categoryData = Object.keys(categoryCount).map((key) => ({
+    name: key,
+    value: categoryCount[key],
+  }));
+
+  const userData = Object.keys(userCount).map((key) => ({
+    name: key.slice(-4),
+    value: userCount[key],
+  }));
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center text-black">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-extrabold text-indigo-600">
-            CityPulse
-          </Link>
-          <NavLinks />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white text-black">
+      {/* 🔥 NAVBAR */}
+      <nav className="bg-white/80 backdrop-blur border-b px-8 py-5 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <h1 className="text-3xl font-extrabold text-indigo-600">CityPulse</h1>
+
+        <div className="flex items-center space-x-6 text-base font-medium">
+          {!user ? (
+            <>
+              <Link href="/login">Login</Link>
+              <Link
+                href="/signup"
+                className="bg-indigo-600 text-white px-5 py-2 rounded-lg"
+              >
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href={user.role === "official" ? "/gov-dashboard" : "/account"}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+              >
+                {user.role === "official" ? "Dashboard" : user.name}
+              </Link>
+
+              <button onClick={handleLogout} className="text-red-500">
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </nav>
 
-      <section className="bg-indigo-50 pt-16 pb-16 px-4 text-center md:pt-24 md:pb-24">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-gray-900 leading-tight sm:text-5xl md:text-6xl">
-            See It. Report It.{" "}
-            <span className="text-indigo-600 block sm:inline">Resolve It.</span>
-          </h1>
+      {/* 🔥 HERO */}
+      <section className="text-center py-20 px-4 bg-gradient-to-b from-indigo-50 via-white to-white">
+        <h1 className="text-5xl font-extrabold">People’s Posts</h1>
 
-          {userRole === "citizen" && (
-            <p className="mt-4 text-lg font-semibold text-gray-700 max-w-2xl mx-auto sm:text-xl">
-              Welcome back, {name}! Thank you for your continued help.
-            </p>
-          )}
-          {userRole !== "citizen" && (
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto sm:text-xl">
-              {userRole === "official"
-                ? "Your management hub is ready for action."
-                : "Your direct connection to city services. Post neighborhood issues and track progress in real-time."}
-            </p>
-          )}
+        <p className="mt-4 text-gray-600 max-w-2xl mx-auto text-lg">
+          A unified platform for citizens to report civic issues.
+        </p>
 
-          <Link
-            href={reportLink}
-            className="mt-8 inline-block bg-indigo-600 text-white font-semibold py-3 px-8 rounded-full shadow-xl hover:bg-indigo-700 transition duration-150 transform hover:scale-[1.02] text-lg"
-          >
-            {reportButtonText}
-          </Link>
-          {/* ---------------------------------------------------- */}
+        <Link
+          href={reportLink}
+          className="mt-10 inline-block bg-indigo-600 text-white px-10 py-3 rounded-full font-semibold shadow hover:scale-105 transition"
+        >
+          {user?.role === "official" ? "Go to Dashboard" : "Report a Problem"}
+        </Link>
+      </section>
+
+      {/* 🔥 CHARTS */}
+      <section className="max-w-7xl mx-auto px-4 py-20">
+        <h2 className="text-4xl font-bold mb-12 text-center">
+          📊 City Insights Dashboard
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-12">
+          {/* 🌆 CITY */}
+          <div className="bg-white p-8 rounded-3xl shadow-lg flex flex-col items-center">
+            <h3 className="font-semibold text-lg mb-6">Issues by City</h3>
+
+            <PieChart width={400} height={350}>
+              <Pie data={cityData} dataKey="value" outerRadius={130} label>
+                {cityData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </div>
+
+          {/* 🏷 CATEGORY */}
+          <div className="bg-white p-8 rounded-3xl shadow-lg flex flex-col items-center">
+            <h3 className="font-semibold text-lg mb-6">Issues by Category</h3>
+
+            <BarChart width={400} height={350} data={categoryData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value">
+                {categoryData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </div>
+
+          {/* 👤 USERS */}
+          <div className="bg-white p-8 rounded-3xl shadow-lg flex flex-col items-center">
+            <h3 className="font-semibold text-lg mb-6">Top Reporters</h3>
+
+            <BarChart width={400} height={350} data={userData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value">
+                {userData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </div>
         </div>
       </section>
 
-      <section className="bg-white py-12 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-          {STATS.map((stat, index) => (
-            <div
-              key={index}
-              className={`bg-white p-6 rounded-xl shadow-lg border-t-4 border-${stat.color}-500 text-center transition duration-200 hover:shadow-xl`}
-            >
-              <p className="text-4xl font-extrabold text-gray-900">
-                {stat.value}
-              </p>
-              <p className="text-sm text-gray-500 mt-2 font-medium">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* 🔥 REPORTS */}
+      <section className="max-w-5xl mx-auto px-4 pb-20">
+        <h2 className="text-2xl font-bold mb-6">Latest Reports</h2>
 
-      {(userRole !== "citizen" || !isLoggedIn) && (
-        <section className="py-16 px-4 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 border-b border-gray-200 pb-3">
-              🚨 Latest Community Reports
-            </h2>
+        <div className="space-y-6">
+          {reports.length > 0 ? (
+            reports.map((report) => (
+              <div
+                key={report._id}
+                className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition"
+              >
+                <div className="flex justify-between">
+                  <h3 className="font-semibold text-lg">{report.category}</h3>
 
-            <div className="space-y-4">
-              {latestReports.map((report) => (
-                <div
-                  key={report.id}
-                  href={`/problems/${report.id}`}
-                  className="block bg-white p-4 rounded-xl shadow-md transition duration-150 hover:shadow-lg hover:ring-2 ring-indigo-500/50 md:flex md:items-center md:space-x-4"
-                >
-                  <div className="flex-1 mt-0">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800 truncate">
-                        {report.title}
-                      </h3>
-                      <div className="mt-2 md:mt-0 md:ml-4 flex justify-start md:justify-end space-x-3">
-                        <div className="relative cursor-default h-6 w-6 flex items-center justify-center group">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-full w-full absolute inset-0 text-gray-400 group-hover:opacity-0"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                            />
-                          </svg>
+                  <StatusBadge status={report.status} />
+                </div>
 
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-full w-full text-red-500 opacity-0 group-hover:opacity-100"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                          </svg>
-                        </div>
+                <p className="text-sm text-gray-500 mt-1">{report.Address}</p>
 
-                        <StatusBadge status={report.status} />
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Reported {report.time} in the **{report.location}**
-                      District.
-                    </p>
+                <p className="mt-3 text-gray-700">{report.description}</p>
+
+                {report.images?.length > 0 && (
+                  <img
+                    src={report.images[0]}
+                    className="mt-4 h-52 w-full object-cover rounded-xl cursor-pointer hover:scale-105 transition"
+                    onClick={() => setSelectedImage(report.images[0])}
+                  />
+                )}
+
+                <div className="flex justify-between items-center mt-5 pt-3 border-t">
+                  <span className="text-xs text-gray-500 capitalize">
+                    Status: {report.status.replace("_", " ")}
+                  </span>
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-gray-500">
+                      {report.likes?.length || 0} likes
+                    </span>
+
+                    <button onClick={() => toggleLike(report._id)}>
+                      <HeartIcon
+                        className={`w-5 h-5 ${
+                          likedPosts[report._id]
+                            ? "text-red-500 fill-red-500"
+                            : "text-gray-400"
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-10 text-center"></div>
-          </div>
-        </section>
-      )}
-
-      <footer className="bg-gray-800 text-white py-6 mt-12">
-        <div className="max-w-6xl mx-auto text-center text-sm">
-          &copy; {new Date().getFullYear()} CityPulse. Built with Next.js &
-          Supabase.
+              </div>
+            ))
+          ) : (
+            <p>No reports found</p>
+          )}
         </div>
-      </footer>
+      </section>
+
+      {/* 🔥 IMAGE MODAL */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            className="max-h-[90%] max-w-[90%] rounded-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMap, useMapEvents } from "react-leaflet";
 
+// 🔥 Dynamic imports (fix SSR issues)
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
@@ -22,56 +23,116 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
 
-export default function Map({ mock, position, setPosition, selectedIssue }) {
+// ✅ SAFE DEFAULT (Mumbai)
+const DEFAULT_CENTER = {
+  lat: 19.076,
+  lng: 72.8777,
+};
+
+export default function Map({ position, setPosition, selectedIssue }) {
   const searchParams = useSearchParams();
-  const lat = searchParams.get("lat") || 19.8;
-  const lng = searchParams.get("lng") || 75.33;
+
+  // ✅ Parse URL params safely
+  const latParam = parseFloat(searchParams.get("lat"));
+  const lngParam = parseFloat(searchParams.get("lng"));
+
+  // ✅ Build SAFE center (priority order)
+  const center = {
+    lat:
+      typeof position?.lat === "number"
+        ? position.lat
+        : typeof selectedIssue?.coords?.lat === "number"
+        ? selectedIssue.coords.lat
+        : typeof latParam === "number" && !isNaN(latParam)
+        ? latParam
+        : DEFAULT_CENTER.lat,
+
+    lng:
+      typeof position?.lng === "number"
+        ? position.lng
+        : typeof selectedIssue?.coords?.lng === "number"
+        ? selectedIssue.coords.lng
+        : typeof lngParam === "number" && !isNaN(lngParam)
+        ? lngParam
+        : DEFAULT_CENTER.lng,
+  };
 
   const [isClient, setIsClient] = useState(false);
-  let position1 = { lat, lng };
-  let center = position1;
-
-  center = selectedIssue ? selectedIssue.coords : position1;
 
   useEffect(() => setIsClient(true), []);
+
+  // ✅ Leaflet config fix
   useEffect(() => {
     import("@/leadlet.config");
   }, []);
+
   if (!isClient) return <p>Loading map...</p>;
+
   return (
     <MapContainer
-      className="w-full h-full md:h-full md:w-full"
-      center={center}
+      className="w-full h-full"
+      center={[center.lat, center.lng]} // ✅ FIX: leaflet expects array
       zoom={13}
       scrollWheelZoom={true}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={center}>
-        <Popup>
-          A pretty CSS3 popup. <br /> Easily customizable.
-        </Popup>
-      </Marker>
+
+      {/* ✅ Only render marker if valid */}
+      {!isNaN(center.lat) && !isNaN(center.lng) && (
+        <Marker position={[center.lat, center.lng]}>
+          <Popup>
+            Selected Location <br />
+            Lat: {center.lat}, Lng: {center.lng}
+          </Popup>
+        </Marker>
+      )}
+
       <Centering position={center} />
-      <OnClick setPosition={setPosition} />
+      <MapClickHandler setPosition={setPosition} />
     </MapContainer>
   );
 }
 
+//
+// 🔄 Center map safely
+//
 function Centering({ position }) {
   const map = useMap();
-  map.setView({ lat: position.lat, lng: position.lng });
+
+  useEffect(() => {
+    if (
+      typeof position?.lat === "number" &&
+      typeof position?.lng === "number"
+    ) {
+      map.setView([position.lat, position.lng]);
+    }
+  }, [position, map]);
+
+  return null;
 }
 
-function OnClick({ setPosition }) {
+//
+// 🖱️ Handle map click
+//
+function MapClickHandler({ setPosition }) {
   const pathname = usePathname();
   const router = useRouter();
-  const map = useMapEvents({
+
+  useMapEvents({
     click: (e) => {
-      router.push(`${pathname}?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
+      const newPos = {
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+      };
+
+      setPosition?.(newPos);
+
+      router.replace(`${pathname}?lat=${newPos.lat}&lng=${newPos.lng}`);
     },
   });
+
   return null;
 }

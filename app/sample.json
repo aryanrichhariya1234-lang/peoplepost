@@ -1,0 +1,80 @@
+[
+  {
+    "user": "661a1b2c3d4e5f6789012345",
+    "category": "Pothole",
+    "Address": "Western Express Highway, Mumbai",
+    "description": "A deep pothole has formed near the flyover causing traffic slowdowns and vehicle damage.",
+    "images": ["https://images.unsplash.com/photo-1597007066703-5bfbda1d6b76"],
+    "location": {
+      "lat": 19.076,
+      "lng": 72.8777
+    },
+    "status": "open",
+    "comments": [],
+    "likes": []
+  },
+  {
+    "user": "661a1b2c3d4e5f6789012346",
+    "category": "Streetlight",
+    "Address": "Andheri West, Mumbai",
+    "description": "Streetlight has not been functioning for 5 days making the road unsafe at night.",
+    "images": ["https://images.unsplash.com/photo-1509395176047-4a66953fd231"],
+    "location": {
+      "lat": 19.1367,
+      "lng": 72.8295
+    },
+    "status": "in_progress",
+    "comments": [],
+    "likes": []
+  },
+  {
+    "user": "661a1b2c3d4e5f6789012347",
+    "category": "Garbage",
+    "Address": "Dadar East, Mumbai",
+    "description": "Garbage has piled up for days and is spreading bad odor and attracting stray animals.",
+    "images": ["https://images.unsplash.com/photo-1581578731548-c64695cc6952"],
+    "location": {
+      "lat": 19.0176,
+      "lng": 72.8562
+    },
+    "status": "open",
+    "comments": [],
+    "likes": []
+  },
+  {
+    "user": "661a1b2c3d4e5f6789012348",
+    "category": "Water and Drainage",
+    "Address": "Borivali West, Mumbai",
+    "description": "Continuous leakage from underground pipe flooding the street.",
+    "images": ["https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0"],
+    "location": {
+      "lat": 19.2307,
+      "lng": 72.8567
+    },
+    "status": "resolved",
+    "comments": [],
+    "likes": []
+  },
+  {
+    "user": "661a1b2c3d4e5f6789012349",
+    "category": "Public Safety",
+    "Address": "Powai, Mumbai",
+    "description": "Illegal construction is blocking pedestrian walkway and causing safety concerns.",
+    "images": ["https://images.unsplash.com/photo-1503387762-592deb58ef4e"],
+    "location": {
+      "lat": 19.1197,
+      "lng": 72.9054
+    },
+    "status": "in_progress",
+    "comments": [
+      {
+        "user": "661a1b2c3d4e5f6789012350"
+      }
+    ],
+    "likes": [
+      {
+        "user": "661a1b2c3d4e5f6789012351"
+      }
+    ]
+  }
+]

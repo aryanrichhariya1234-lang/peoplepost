@@ -7,7 +7,7 @@ import {
   ClockIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { getServerSupabaseClientReadyOnly } from "../data-service/supabaseReadOnly";
+
 import { getcurrentOfficalData } from "../data-service/actions";
 
 const mockProfile = {

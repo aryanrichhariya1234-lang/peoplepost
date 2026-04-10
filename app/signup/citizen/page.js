@@ -1,23 +1,55 @@
+"use client";
+
 import { LockClosedIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { signUpAction } from "@/app/data-service/actions";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
-const FormStatusMessage = ({ message, success }) => {
-  if (!message) return null;
-  return (
-    <div
-      className={`p-3 rounded-md text-center ${
-        success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-      }`}
-    >
-      <p className="text-sm font-medium">{message}</p>
-    </div>
-  );
-};
+import { handleSignup } from "@/app/data-service/clientfunctions";
 
-export default async function CitizenSignUpPage() {
+export default function CitizenSignUpPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.target);
+
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const passwordConfirm = formData.get("passwordConfirm");
+
+    const body = {
+      name,
+      email,
+      password,
+      passwordConfirm,
+      role: "citizen",
+    };
+
+    const res = await handleSignup(body);
+
+    setLoading(false);
+
+    if (res?.error) {
+      toast.error(res.message || "Signup failed ❌");
+      return;
+    }
+
+    toast.success("Account created successfully 🎉");
+
+    // redirect after short delay so toast is visible
+    setTimeout(() => {
+      router.push("/login");
+    }, 1000);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-black">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
         <div className="text-center">
           <h2 className="mt-2 text-3xl font-extrabold text-gray-900">
@@ -28,103 +60,86 @@ export default async function CitizenSignUpPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" action={signUpAction}>
-          <input type="hidden" name="role" value="citizen" />
-
+        {/* ✅ FIXED FORM */}
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-3">
+            {/* NAME */}
             <div>
-              <label htmlFor="name" className="sr-only">
-                Name
-              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                   <EnvelopeIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="name"
                   name="name"
-                  type="name"
-                  autoComplete="name"
                   required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  className="w-full pl-10 pr-3 py-3 border rounded-lg"
                   placeholder="Name"
                 />
               </div>
             </div>
+
+            {/* EMAIL */}
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                   <EnvelopeIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
                   name="email"
                   type="email"
-                  autoComplete="email"
                   required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Email address"
+                  className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                  placeholder="Email"
                 />
               </div>
             </div>
 
+            {/* PASSWORD */}
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                   <LockClosedIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="password"
                   name="password"
                   type="password"
-                  autoComplete="new-password"
                   required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Password (min. 8 characters)"
+                  className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                  placeholder="Password"
                 />
               </div>
             </div>
 
+            {/* CONFIRM PASSWORD */}
             <div>
-              <label htmlFor="passwordConfirm" className="sr-only">
-                Confirm Password
-              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                   <LockClosedIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="passwordConfirm"
                   name="passwordConfirm"
                   type="password"
-                  autoComplete="new-password"
                   required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  className="w-full pl-10 pr-3 py-3 border rounded-lg"
                   placeholder="Confirm Password"
                 />
               </div>
             </div>
           </div>
 
+          {/* BUTTON */}
           <button
             type="submit"
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700"
           >
-            Sign Up as Citizen
+            {loading ? "Creating..." : "Sign Up"}
           </button>
         </form>
 
+        {/* LOGIN LINK */}
         <div className="text-center text-sm">
-          <Link
-            href="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
+          <Link href="/login" className="text-indigo-600 hover:text-indigo-500">
             Already have an account? Log In
           </Link>
         </div>

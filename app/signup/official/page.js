@@ -1,155 +1,155 @@
+"use client";
+
 import { LockClosedIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { signUpAction } from "@/app/data-service/actions";
-const FormStatusMessage = ({ message, success }) => {
-  // ... (Same simple client component)
-  if (!message) return null;
-  return (
-    <div
-      className={`p-3 rounded-md text-center ${
-        success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-      }`}
-    >
-      <p className="text-sm font-medium">{message}</p>
-    </div>
-  );
-};
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
-export default function OfficialSignUpPage({ searchParams }) {
-  const statusMessage = searchParams.message;
-  const isSuccess = searchParams.success === "true";
+import { handleSignup } from "@/app/data-service/clientfunctions";
+
+export default function OfficialSignUpPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.target);
+
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const passwordConfirm = formData.get("passwordConfirm");
+    const governmentId = formData.get("governmentId");
+
+    const body = {
+      name,
+      email,
+      password,
+      passwordConfirm,
+      governmentId,
+      role: "official",
+    };
+
+    const res = await handleSignup(body);
+
+    setLoading(false);
+
+    if (res?.error) {
+      toast.error(res.message || "Signup failed ❌");
+      return;
+    }
+
+    toast.success("Account created! Await admin approval 🏛️");
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 1200);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-black">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
+        {/* HEADER */}
         <div className="text-center">
           <h2 className="mt-2 text-3xl font-extrabold text-gray-900">
             Government Official Sign Up
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Verification required. Your account will be pending administrator
-            approval.
+            Verification required. Your account will be reviewed by admin.
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" action={signUpAction}>
-          <input type="hidden" name="role" value="official" />
-
-          <div className="rounded-md shadow-sm space-y-3">
-            <div>
-              <label htmlFor="name" className="sr-only">
-                Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="name"
-                  name="name"
-                  type="name"
-                  autoComplete="name"
-                  required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Name"
-                />
+        {/* FORM */}
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            {/* NAME */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <EnvelopeIcon className="h-5 w-5 text-gray-400" />
               </div>
-            </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Email address"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Password (min. 8 characters)"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="passwordConfirm" className="sr-only">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="passwordConfirm"
-                  name="passwordConfirm"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className={`appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Confirm Password"
-                />
-              </div>
+              <input
+                name="name"
+                required
+                className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                placeholder="Name"
+              />
             </div>
 
-            <div className="pt-2">
-              <label
-                htmlFor="governmentId"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Government Issued ID (Required)
+            {/* EMAIL */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                name="email"
+                type="email"
+                required
+                className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                placeholder="Email address"
+              />
+            </div>
+
+            {/* PASSWORD */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <LockClosedIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                name="password"
+                type="password"
+                required
+                className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                placeholder="Password"
+              />
+            </div>
+
+            {/* CONFIRM PASSWORD */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <LockClosedIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                name="passwordConfirm"
+                type="password"
+                required
+                className="w-full pl-10 pr-3 py-3 border rounded-lg"
+                placeholder="Confirm Password"
+              />
+            </div>
+
+            {/* GOVERNMENT ID */}
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Government ID
               </label>
               <input
-                id="governmentId"
                 name="governmentId"
-                type="text"
                 required
-                className={`appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Enter your official department ID or badge number"
+                className="w-full px-3 py-3 border rounded-lg mt-1"
+                placeholder="Department ID / Badge Number"
               />
-              <p className="mt-1 text-xs text-orange-500">
-                *Your account will be manually reviewed and verified by an
-                admin.
+              <p className="text-xs text-orange-500 mt-1">
+                *Account will be verified manually by admin
               </p>
             </div>
           </div>
 
-          <FormStatusMessage message={statusMessage} success={isSuccess} />
-
+          {/* BUTTON */}
           <button
             type="submit"
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition"
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-lg text-white bg-teal-600 hover:bg-teal-700"
           >
-            Sign Up as Official
+            {loading ? "Creating..." : "Sign Up as Official"}
           </button>
         </form>
 
+        {/* LOGIN LINK */}
         <div className="text-center text-sm">
-          <Link
-            href="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
+          <Link href="/login" className="text-indigo-600 hover:text-indigo-500">
             Already have an account? Log In
           </Link>
         </div>
