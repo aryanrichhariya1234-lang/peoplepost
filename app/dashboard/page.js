@@ -8,7 +8,7 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 
-import { getcurrentOfficalData } from "../data-service/actions";
+import { getCurrentUserData } from "../data-service/clientfunctions";
 
 const mockProfile = {
   role: "Verified Official",
@@ -43,7 +43,8 @@ const MANAGEMENT_OPTIONS = [
 export default async function DashboardPage() {
   const profile = mockProfile; // Placeholder for fetched user profile
   const data = await getcurrentOfficalData();
-  const { name, governmentId } = data;
+  const { name } = data;
+  const governmentId = data?.governmentId || "";
 
   return (
     <div className="min-h-screen bg-gray-50">
