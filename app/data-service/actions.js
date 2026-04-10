@@ -1,11 +1,14 @@
 "use server";
-
+const BASE_URL = "https://peoplespost-3rje.onrender.com/api/v1";
 export const getId = async () => {
   try {
-    const res = await fetch("http://localhost:3000/api/v1/users/me", {
-      method: "GET",
-      credentials: "include",
-    });
+    const res = await fetch(
+      "https://peoplespost-3rje.onrender.com/api/v1/users/me",
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
 
     const data = await res.json();
 
