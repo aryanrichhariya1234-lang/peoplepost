@@ -1,14 +1,11 @@
 "use server";
-const BASE_URL = "https://peoplespost-3rje.onrender.com/api/v1";
+const BASE_URL = "https://peoplepost-go.onrender.com/api/v1";
 export const getId = async () => {
   try {
-    const res = await fetch(
-      "https://peoplespost-3rje.onrender.com/api/v1/users/me",
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
+    const res = await fetch(`${BASE_URL}/users/me`, {
+      method: "GET",
+      credentials: "include",
+    });
 
     const data = await res.json();
 

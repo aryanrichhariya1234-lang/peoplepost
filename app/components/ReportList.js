@@ -80,7 +80,7 @@ const IssueDetailPanel = ({ issue, onBack, onUpdateIssue }) => {
     }
 
     // Pass the raw object back to update the master list
-    onUpdateIssue({ ...res, _id: issue.id, status: newStatus });
+    onUpdateIssue(res);
     toast.success(`Status changed to ${newStatus} ✅`);
   };
 

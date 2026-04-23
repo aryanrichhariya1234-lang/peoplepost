@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 
 // 🔥 USE ENV (IMPORTANT)
-const BASE_URL = "https://peoplespost-3rje.onrender.com/api/v1";
+const BASE_URL = "https://peoplepost-go.onrender.com/api/v1";
 
 // ================== AUTH ==================
 
@@ -168,7 +168,7 @@ export const updatePost = async ({ body, issue }) => {
       return { error: true };
     }
 
-    return { success: true };
+    return data.data;
   } catch {
     return { error: true };
   }
